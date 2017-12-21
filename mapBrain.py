@@ -1,60 +1,35 @@
 #!/usr/bin/env python
 
-"""
-Spherical Brain Mapping of 3D Brain Images. 
-3D brain imaging, such as MRI or PET produces a huge amount of data that is
-currently analysed using uni or multivariate approaches. 
-The main aim of SBM is to provide a new framework that allows the mapping  
-of a 3D brain image to a two-dimensional space by means of some statistical 
-measures. The system is based on a conversion from 3D spherical to 2D rectangular 
-coordinates. For each spherical coordinate pair (theta,phi), a vector 
-containing all voxels  in the radius is selected, and a number of values are 
-computed, including statistical values (average, entropy, kurtosis) and 
-morphological values (tissue thickness, distance to the central point, number of 
-non-zero blocks). These values conform a two-dimensional image that can be 
-computationally or even visually analysed.
-
-The simplest approach is to use whichever measure that we want, and then apply
-SBM to a brain image object, for example, imported using nibabel: 
-    import nibabel as nib
-    img = nib.load('MRIimage.nii')
-
-We create an sbm object:
-    import mapBrain
-    sbm = mapBrain.SphericalBrainMapping()
-
-And then, perform the SBM using 'average':
-    map = sbm.doSBM(img.get_data(), measure='average', show=True)
-
-Francisco Jesus Martinez Murcia, Spring 2015
-REFs:
-[1] - F.J. Martinez-Murcia et al. Projecting MRI Brain images for the
-      detection of Alzheimer's Disease. Innovation in Medicine and 
-      Healthcare 207:225 2014.
-[2] - F.J. Martinez-Murcia et al. A Spherical Brain Mapping of MR Images 
-      for the Detection of Alzheimer's Disease. Journal
-      of Current Alzheimer's Research. 13(5):575-88. 2016. 
-"""
-
 import numpy
 from scipy.stats import kurtosis, skew
 
 class SphericalBrainMapping(object):
     """ 
     Performs a Spherical Brain Mapping of a 3D Brain Image 
+    
+    :param resolution: Angle resolution at which each mapping vector is computed (default 1 degree)
+    :type resolution: int, float
+    :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)
+    :type deformation: float 
+    :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)
+    :type ithreshold: float
+    :param nlayers: Nummber of equally distributed layers (default 1)
+    :type nlayers: int
     """
     
     def __init__(self, resolution=1, deformation=0.0, ithreshold=0, nlayers=1):
         """
         Initializes a SBM instance, saving all parameters as attributes of the 
         instance. 
-        resolution: Angle resolution at which each mapping vector is 
-        computed (default 1 degree)
-        deformation: Rate of unequally distributed mapping vectors, to be used 
-        when the surface to be mapped is not spherical but ellipsoid (a float
-        between 0-1, default 0 -> no deformation). 
-        ithreshold: Intensity threshold for the projections needing it (default 0)
-        nlayers: Nummber of equally distributed layers (default 1)
+        
+        :param resolution: Angle resolution at which each mapping vector is computed (default 1 degree)
+        :type resolution: int, float
+        :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)
+        :type deformation: float 
+        :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)
+        :type ithreshold: float
+        :param nlayers: Nummber of equally distributed layers (default 1)
+        :type nlayers: int
         """
         self.resolution = resolution
         self.deformation = deformation
@@ -62,27 +37,38 @@ class SphericalBrainMapping(object):
         self.nlayers = nlayers
         
     def vsetResolution(self, resolution=1):
-        """ vsets the angular resolution at which the map will be computed
-        :param resolution: Angular resolution at which each mapping vector 
-        will be computed (default 1). 
+        """ 
+        Sets the angular resolution at which the map will be computed
+        
+        :param resolution: Angle resolution at which each mapping vector is computed (default 1 degree)
+        :type resolution: int, float
         """
         self.resolution = resolution
         
     def vsetDeformation(self, deformation=0.0):
-        """ vsets the deformation rate to be used in SBM. 
-        :param deformation: Deformation rate (float 0-1)
+        """ 
+        Sets the deformation rate to be used in SBM. 
+        
+        :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)
+        :type deformation: float 
         """
         self.deformation = deformation
         
     def vsetIThreshold(self, ithreshold=0):
-        """ vsets the intensity threshold to be used in SBM.
-        :param ithreshold: Intensity Threshold
+        """ 
+        Sets the intensity threshold to be used in SBM.
+        
+        :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)
+        :type ithreshold: float
         """
         self.ithreshold = ithreshold
     
     def vsetNLayers(self, nlayers=1):
-        """ vsets the number of layers to be mapped
+        """
+        Sets the number of layers to be mapped
+        
         :param nlayers: Nummber of equally distributed layers (default 1)
+        :type nlayers: int
         """
         self.nlayers = nlayers
         
@@ -112,7 +98,9 @@ class SphericalBrainMapping(object):
         
     def surface(self, vset):
         """ Returns the surface of all mapped voxels
+        
         :param vset: set of mapped voxels' intensity
+        :type vset: 1-dimensional numpy array
         """
         val = numpy.argwhere(vset>self.ithreshold)
         if len(val)==0:
@@ -121,7 +109,9 @@ class SphericalBrainMapping(object):
         
     def thickness(self, vset):
         """ Returns the thickness of the layer of mapped voxels
+        
         :param vset: set of mapped voxels' intensity
+        :type vset: 1-dimensional numpy array
         """
         aux = numpy.argwhere(vset>self.ithreshold)
         if aux.size>0:
@@ -132,37 +122,49 @@ class SphericalBrainMapping(object):
         
     def numfold(self, vset):
         """ Returns the number of non-connected subvsets in the mapped voxels
+        
         :param vset: set of mapped voxels' intensity
+        :type vset: 1-dimensional numpy array
         """
         return numpy.ceil(len(numpy.argwhere(numpy.bitwise_xor(vset[:-1]>self.ithreshold, vset[1:]>self.ithreshold)))/2.)
         
     def average(self, vset):
         """ Returns the average of the sampling vset
+        
         :param vset: set of mapped voxels' intensity
+        :type vset: 1-dimensional numpy array
         """
         return numpy.nanmean(vset)     
            
     def variance(self, vset):
         """ Returns the variance of the sampling vset
+        
         :param vset: set of mapped voxels' intensity
+        :type vset: 1-dimensional numpy array
         """
         return numpy.nanvar(vset)      
            
     def skewness(self, vset):
         """ Returns the skewness of the sampling vset
+        
         :param vset: set of mapped voxels' intensity
+        :type vset: 1-dimensional numpy array
         """
         return skew(vset, bias=False)
            
     def entropy(self, vset):
         """ Returns the entropy of the sampling vset
+        
         :param vset: set of mapped voxels' intensity
+        :type vset: 1-dimensional numpy array
         """
         return sum(numpy.multiply(vset[vset>self.ithreshold],numpy.log(vset[vset>self.ithreshold])))
            
     def kurtosis(self, vset):
         """ Returns the kurtosis of the sampling vset
+        
         :param vset: set of mapped voxels' intensity
+        :type vset: 1-dimensional numpy array
         """
         return kurtosis(vset, fisher=False, bias=False)        
 
@@ -171,6 +173,7 @@ class SphericalBrainMapping(object):
         ''' Interpolates the gray level found at the point p
         using interpolation by percentage of superposition of
         pixels.
+        
         ''' 
         # We create the array of surrounding points: 
         a = numpy.array([[0, 0, 0],
@@ -218,6 +221,12 @@ class SphericalBrainMapping(object):
         |-----------|
         | 7 | 6 | 5 |
         -------------
+        
+        :param center: Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image. 
+        :type center: 3D coordinates in numpy array
+        :param n: normal vector specifying the direction
+        :type n: 3D coordinates in numpy array
+            
         '''
         u11 = numpy.sqrt(n[1]**2/(n[0]**2+n[1]**2))
         u12 = -numpy.sqrt(n[1]**2/(n[0]**2+n[1]**2))
@@ -263,13 +272,22 @@ class SphericalBrainMapping(object):
         return ndarray
 
 
-    def computeTexture(self, p, imag, center, distances=1):
+    def computeTexture(self, p, imag, origin, distances=1):
         '''
         Computes the texture around vector p
+        
+        :param p: 
+        :param imag: Three-dimensional intensity array corresponding to a 3D registered brain image. 
+        :type imag: 3D numpy array
+        :param origin: Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image. 
+        :type origin: 3D coordinates in numpy array
+        :param distances: It helds the distances at which the GLCM is going to be computed. 
+        :type distances: integer or list of integers
         '''
         from mahotas.features import texture
         
-        origins = self._get_points_centering(center, p[1,:])
+        # set the originso of each vector (the central one and surrounding 8)
+        origins = self._get_points_centering(origin, p[1,:])
         puntos = numpy.array([p+cent for cent in origins])
         select = (puntos<numpy.array(imag.shape)-1).all(axis=2).all(axis=0)
         p_real = puntos[:,select,:]
@@ -278,7 +296,8 @@ class SphericalBrainMapping(object):
         
         ndarray = self._posterizeImage(colors)
         
-        # Prevent errors with iterative list:
+        # Prevent errors with iterative list, adding support for 
+        # several distances in the computation of the GLCM
         if (type(distances) is not list) and (type(distances) is not numpy.ndarray):
             distances = [distances]        
         
@@ -292,13 +311,21 @@ class SphericalBrainMapping(object):
     
     def showMap(self, map, measure, cmap='gray'):
         """ Shows the computed maps in a window using pyplot
+        
         :param map: map or array of maps to be shown
+        :type map: numpy ndarray
+        :param measure: SBM measure to be computed
+        :type measure: string
+        :param cmap: Colormap to use in representation
+        :type cmap: string with valid matplotlib colormap
         """
         import matplotlib.pyplot as plt
+        # Set the maximum and minimum value of the computed maps
         minimum = numpy.min(map)
         maximum = numpy.max(map)
         if self.nlayers>1:
             imgplot = plt.figure()
+            # Trick for plotting large numbers of layers in a kept proportion
             ncol = numpy.floor(self.nlayers/numpy.ceil(self.nlayers**(1.0/3)))
             nrow = numpy.ceil(self.nlayers/ncol)
             for nl in range(self.nlayers):
@@ -308,6 +335,7 @@ class SphericalBrainMapping(object):
                 plt.colorbar()
             plt.show()
         elif measure=='texture':
+            # If texture, it plots 13 as if they were layers.
             imgplot = plt.figure()
             ncol = numpy.floor(13/numpy.ceil(13**(1.0/3)))
             nrow = numpy.ceil(13/ncol)
@@ -332,9 +360,13 @@ class SphericalBrainMapping(object):
     def sph2cart(self, theta, phi, r):
         """ Returns the corresponding spherical coordinates given the elevation,
         azimuth and radius
+        
         :param theta: Azimuth angle (radians)
+        :type theta: float
         :param phi: Elevation angle (radians)
+        :type phi: float
         :param rad: Radius 
+        :type rad: float
         """
         z = r * numpy.sin(phi)
         rcosphi = r * numpy.cos(phi)
@@ -343,19 +375,24 @@ class SphericalBrainMapping(object):
         return x, y, z
 
             
-    def doSBM(self, image, measure='average', show=True, centre=None):
-        """ Performs the SBM on the selected image and using the specified 
-        measure
-        :param image: Three-dimensional intensity array corresponding to a 3D 
-        registered brain image. 
-        :param measure: Measure used 
+    def doSBM(self, image, measure='average', show=True, origin=None):
+        """ 
+        Performs the SBM on the selected image and using the specified measure
+        
+        :param image: Three-dimensional intensity array corresponding to a 3D registered brain image. 
+        :type image: 3D numpy array
+        :param measure: SBM measure to be computed
+        :type measure: string
         :param show: Specifies whether to show the computed map (True) or not (False)
+        :type show: bool
+        :param origin: Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image. 
+        :type origin: 3D coordinates in numpy array
         """
         image[numpy.isnan(image)] = 0
         tam = image.shape                           # Size of the image
-        if centre is None:
-            centre = numpy.divide(image.shape,2)    # To compute the middle point
-        lon = max(centre)                       # Compute the maximum value of the mapping vector v
+        if origin is None:
+            origin = numpy.divide(image.shape,2)    # To compute the middle point
+        lon = max(origin)                       # Compute the maximum value of the mapping vector v
 #        tamArr=numpy.repeat([tam],lon,0) # Residual
 
         # We create the mapping vectors and perform the conversion from spherical
@@ -373,12 +410,12 @@ class SphericalBrainMapping(object):
             for i in range(azim.shape[0]):
                 for j in range(elev.shape[0]):
                     p = numpy.vstack((x[j,i,:].flatten(),y[j,i,:].flatten(),z[j,i,:].flatten())).T
-                    mapa[:,i,j], _ = self.computeTexture(p, image, centre)
+                    mapa[:,i,j], _ = self.computeTexture(p, image, origin)
             
         else:
-            X = numpy.int32(numpy.round(x+centre[0]))
-            Y = numpy.int32(numpy.round(y+centre[1]))
-            Z = numpy.int32(numpy.round(z+centre[2]))
+            X = numpy.int32(numpy.round(x+origin[0]))
+            Y = numpy.int32(numpy.round(y+origin[1]))
+            Z = numpy.int32(numpy.round(z+origin[2]))
             coord = numpy.ravel_multi_index((X,Y,Z), mode='clip', dims=tam, order='F').transpose((1,0,2))
     
             # This is the blank map to be filled. 

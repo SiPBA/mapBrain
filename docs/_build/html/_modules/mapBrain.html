@@ -1,0 +1,553 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>mapBrain &#8212; mapBrain 0.9.1 documentation</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">mapBrain 0.9.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for mapBrain</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">kurtosis</span><span class="p">,</span> <span class="n">skew</span>
+
+<div class="viewcode-block" id="SphericalBrainMapping"><a class="viewcode-back" href="../api.html#mapBrain.SphericalBrainMapping">[docs]</a><span class="k">class</span> <span class="nc">SphericalBrainMapping</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Performs a Spherical Brain Mapping of a 3D Brain Image </span>
+<span class="sd">    </span>
+<span class="sd">    :param resolution: Angle resolution at which each mapping vector is computed (default 1 degree)</span>
+<span class="sd">    :type resolution: int, float</span>
+<span class="sd">    :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)</span>
+<span class="sd">    :type deformation: float </span>
+<span class="sd">    :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)</span>
+<span class="sd">    :type ithreshold: float</span>
+<span class="sd">    :param nlayers: Nummber of equally distributed layers (default 1)</span>
+<span class="sd">    :type nlayers: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">deformation</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">ithreshold</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nlayers</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a SBM instance, saving all parameters as attributes of the </span>
+<span class="sd">        instance. </span>
+<span class="sd">        </span>
+<span class="sd">        :param resolution: Angle resolution at which each mapping vector is computed (default 1 degree)</span>
+<span class="sd">        :type resolution: int, float</span>
+<span class="sd">        :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)</span>
+<span class="sd">        :type deformation: float </span>
+<span class="sd">        :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)</span>
+<span class="sd">        :type ithreshold: float</span>
+<span class="sd">        :param nlayers: Nummber of equally distributed layers (default 1)</span>
+<span class="sd">        :type nlayers: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deformation</span> <span class="o">=</span> <span class="n">deformation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span> <span class="o">=</span> <span class="n">ithreshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span> <span class="o">=</span> <span class="n">nlayers</span>
+        
+    <span class="k">def</span> <span class="nf">vsetResolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Sets the angular resolution at which the map will be computed</span>
+<span class="sd">        </span>
+<span class="sd">        :param resolution: Angle resolution at which each mapping vector is computed (default 1 degree)</span>
+<span class="sd">        :type resolution: int, float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span>
+        
+    <span class="k">def</span> <span class="nf">vsetDeformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deformation</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Sets the deformation rate to be used in SBM. </span>
+<span class="sd">        </span>
+<span class="sd">        :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)</span>
+<span class="sd">        :type deformation: float </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deformation</span> <span class="o">=</span> <span class="n">deformation</span>
+        
+<div class="viewcode-block" id="SphericalBrainMapping.vsetIThreshold"><a class="viewcode-back" href="../api.html#mapBrain.SphericalBrainMapping.vsetIThreshold">[docs]</a>    <span class="k">def</span> <span class="nf">vsetIThreshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ithreshold</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Sets the intensity threshold to be used in SBM.</span>
+<span class="sd">        </span>
+<span class="sd">        :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)</span>
+<span class="sd">        :type ithreshold: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span> <span class="o">=</span> <span class="n">ithreshold</span></div>
+    
+    <span class="k">def</span> <span class="nf">vsetNLayers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nlayers</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the number of layers to be mapped</span>
+<span class="sd">        </span>
+<span class="sd">        :param nlayers: Nummber of equally distributed layers (default 1)</span>
+<span class="sd">        :type nlayers: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span> <span class="o">=</span> <span class="n">nlayers</span>
+        
+    <span class="k">def</span> <span class="nf">getResolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the resolution used in SBM. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
+    
+    <span class="k">def</span> <span class="nf">getDeformation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the current deformation rate used in SBM &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">deformation</span>
+        
+    <span class="k">def</span> <span class="nf">getIThreshold</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the Intensity Threshold used in SBM &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span>
+        
+    <span class="k">def</span> <span class="nf">getNLayers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the number of layers used in SBM &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span>
+        
+    <span class="k">def</span> <span class="nf">computeMappingVectors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Computes the mapping vectors azim and elev</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spaceVector</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">deformation</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="mi">180</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="mi">180</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="o">*</span><span class="mi">2</span><span class="p">)))</span>
+        <span class="n">azim</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">spaceVector</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="o">-</span><span class="mi">270</span><span class="p">)</span>
+        <span class="n">elev</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">azim</span><span class="p">,</span> <span class="n">elev</span>
+        
+    <span class="k">def</span> <span class="nf">surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the surface of all mapped voxels</span>
+<span class="sd">        </span>
+<span class="sd">        :param vset: set of mapped voxels&#39; intensity</span>
+<span class="sd">        :type vset: 1-dimensional numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">vset</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">val</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">thickness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the thickness of the layer of mapped voxels</span>
+<span class="sd">        </span>
+<span class="sd">        :param vset: set of mapped voxels&#39; intensity</span>
+<span class="sd">        :type vset: 1-dimensional numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">vset</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">aux</span><span class="o">.</span><span class="n">size</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">thickness</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">aux</span><span class="p">)</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">aux</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">thickness</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">thickness</span>
+        
+    <span class="k">def</span> <span class="nf">numfold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the number of non-connected subvsets in the mapped voxels</span>
+<span class="sd">        </span>
+<span class="sd">        :param vset: set of mapped voxels&#39; intensity</span>
+<span class="sd">        :type vset: 1-dimensional numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">bitwise_xor</span><span class="p">(</span><span class="n">vset</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span><span class="p">,</span> <span class="n">vset</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span><span class="p">)))</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">average</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the average of the sampling vset</span>
+<span class="sd">        </span>
+<span class="sd">        :param vset: set of mapped voxels&#39; intensity</span>
+<span class="sd">        :type vset: 1-dimensional numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">vset</span><span class="p">)</span>     
+           
+    <span class="k">def</span> <span class="nf">variance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the variance of the sampling vset</span>
+<span class="sd">        </span>
+<span class="sd">        :param vset: set of mapped voxels&#39; intensity</span>
+<span class="sd">        :type vset: 1-dimensional numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanvar</span><span class="p">(</span><span class="n">vset</span><span class="p">)</span>      
+           
+    <span class="k">def</span> <span class="nf">skewness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the skewness of the sampling vset</span>
+<span class="sd">        </span>
+<span class="sd">        :param vset: set of mapped voxels&#39; intensity</span>
+<span class="sd">        :type vset: 1-dimensional numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">skew</span><span class="p">(</span><span class="n">vset</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+           
+    <span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the entropy of the sampling vset</span>
+<span class="sd">        </span>
+<span class="sd">        :param vset: set of mapped voxels&#39; intensity</span>
+<span class="sd">        :type vset: 1-dimensional numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">vset</span><span class="p">[</span><span class="n">vset</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span><span class="p">],</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">vset</span><span class="p">[</span><span class="n">vset</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">ithreshold</span><span class="p">])))</span>
+           
+    <span class="k">def</span> <span class="nf">kurtosis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the kurtosis of the sampling vset</span>
+<span class="sd">        </span>
+<span class="sd">        :param vset: set of mapped voxels&#39; intensity</span>
+<span class="sd">        :type vset: 1-dimensional numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">kurtosis</span><span class="p">(</span><span class="n">vset</span><span class="p">,</span> <span class="n">fisher</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>        
+
+
+    <span class="k">def</span> <span class="nf">_interp_single_gray_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">imag</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Interpolates the gray level found at the point p</span>
+<span class="sd">        using interpolation by percentage of superposition of</span>
+<span class="sd">        pixels.</span>
+<span class="sd">        </span>
+<span class="sd">        &#39;&#39;&#39;</span> 
+        <span class="c1"># We create the array of surrounding points: </span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                      <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        
+        <span class="c1"># Extract the colours at each point:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">imag</span><span class="p">[</span><span class="n">points</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]]</span>
+        
+        <span class="c1"># Calculate the weights as distances:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p</span><span class="o">-</span><span class="n">points</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1"># And sum the different values: </span>
+        <span class="n">ci</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ci</span>
+    
+    <span class="k">def</span> <span class="nf">_interp_gray_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">imag</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Interpolates the gray level found at the point array p</span>
+<span class="sd">        by using superposition interpolation. </span>
+<span class="sd">        &#39;&#39;&#39;</span> 
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">ndim</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+            <span class="n">ci</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">ci</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_interp_single_gray_level</span><span class="p">(</span><span class="n">punto</span><span class="p">,</span><span class="n">imag</span><span class="p">)</span> <span class="k">for</span> <span class="n">punto</span> <span class="ow">in</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]])</span>
+                
+        <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">ndim</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">ci</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_interp_single_gray_level</span><span class="p">(</span><span class="n">punto</span><span class="p">,</span><span class="n">imag</span><span class="p">)</span> <span class="k">for</span> <span class="n">punto</span> <span class="ow">in</span> <span class="n">p</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">ci</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_points_centering</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">        Gets the array of centerpoints in a given </span>
+<span class="sd">        direction (n), in this order:</span>
+<span class="sd">        -------------</span>
+<span class="sd">        | 1 | 2 | 3 |</span>
+<span class="sd">        |------------</span>
+<span class="sd">        | 8 | 0 | 4 |</span>
+<span class="sd">        |-----------|</span>
+<span class="sd">        | 7 | 6 | 5 |</span>
+<span class="sd">        -------------</span>
+<span class="sd">        </span>
+<span class="sd">        :param center: Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image. </span>
+<span class="sd">        :type center: 3D coordinates in numpy array</span>
+<span class="sd">        :param n: normal vector specifying the direction</span>
+<span class="sd">        :type n: 3D coordinates in numpy array</span>
+<span class="sd">            </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">u11</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">u12</span> <span class="o">=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">u21</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">u11</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">u22</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">u12</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="n">u1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u11</span><span class="p">,</span> <span class="n">u21</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">u2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u12</span><span class="p">,</span> <span class="n">u22</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u1</span><span class="p">,</span><span class="n">n</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">1e-10</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">u1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">u2</span>
+        
+        <span class="n">v</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">u</span><span class="p">)</span>
+        
+        <span class="n">p0</span> <span class="o">=</span> <span class="n">center</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">u</span> <span class="o">+</span> <span class="n">v</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">v</span>
+        <span class="n">p3</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">u</span> <span class="o">+</span> <span class="n">v</span>
+        <span class="n">p4</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">u</span>
+        <span class="n">p5</span> <span class="o">=</span> <span class="n">center</span> <span class="o">+</span> <span class="n">u</span> <span class="o">-</span> <span class="n">v</span>
+        <span class="n">p6</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">v</span>
+        <span class="n">p7</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">u</span> <span class="o">-</span> <span class="n">v</span>
+        <span class="n">p8</span> <span class="o">=</span> <span class="n">center</span> <span class="o">-</span> <span class="n">u</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">p4</span><span class="p">,</span> <span class="n">p5</span><span class="p">,</span> <span class="n">p6</span><span class="p">,</span> <span class="n">p7</span><span class="p">,</span> <span class="n">p8</span><span class="p">])</span>
+    
+    <span class="k">def</span> <span class="nf">_posterizeImage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">,</span> <span class="n">numLevels</span> <span class="o">=</span> <span class="mi">16</span> <span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">        Posterizes the image to number of levels</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="c1">#Gray-level resizing</span>
+        <span class="n">numLevels</span> <span class="o">=</span> <span class="n">numLevels</span><span class="o">-</span><span class="mi">1</span> <span class="c1">#don&#39;t touch. Logical adding issue.</span>
+        <span class="n">minImage</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="n">ndarray</span> <span class="o">=</span> <span class="n">ndarray</span><span class="o">-</span><span class="p">(</span><span class="n">minImage</span><span class="p">)</span>
+        <span class="n">maxImage</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="n">tempShift</span> <span class="o">=</span> <span class="n">maxImage</span><span class="o">/</span><span class="n">numLevels</span>
+        <span class="n">ndarray</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">ndarray</span><span class="o">/</span><span class="n">tempShift</span><span class="p">)</span>
+        <span class="n">ndarray</span><span class="o">=</span><span class="n">ndarray</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">numLevels</span> <span class="o">=</span> <span class="n">numLevels</span> <span class="o">+</span> <span class="mi">1</span> <span class="c1"># don&#39;t touch. Logical adding issue.</span>
+        
+        <span class="k">return</span> <span class="n">ndarray</span>
+
+
+<div class="viewcode-block" id="SphericalBrainMapping.computeTexture"><a class="viewcode-back" href="../api.html#mapBrain.SphericalBrainMapping.computeTexture">[docs]</a>    <span class="k">def</span> <span class="nf">computeTexture</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">imag</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">distances</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Computes the texture around vector p</span>
+<span class="sd">        </span>
+<span class="sd">        :param p: </span>
+<span class="sd">        :param imag: Three-dimensional intensity array corresponding to a 3D registered brain image. </span>
+<span class="sd">        :type imag: 3D numpy array</span>
+<span class="sd">        :param origin: Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image. </span>
+<span class="sd">        :type origin: 3D coordinates in numpy array</span>
+<span class="sd">        :param distances: It helds the distances at which the GLCM is going to be computed. </span>
+<span class="sd">        :type distances: integer or list of integers</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">mahotas.features</span> <span class="k">import</span> <span class="n">texture</span>
+        
+        <span class="c1"># set the originso of each vector (the central one and surrounding 8)</span>
+        <span class="n">origins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_points_centering</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">,:])</span>
+        <span class="n">puntos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">p</span><span class="o">+</span><span class="n">cent</span> <span class="k">for</span> <span class="n">cent</span> <span class="ow">in</span> <span class="n">origins</span><span class="p">])</span>
+        <span class="n">select</span> <span class="o">=</span> <span class="p">(</span><span class="n">puntos</span><span class="o">&lt;</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">imag</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">p_real</span> <span class="o">=</span> <span class="n">puntos</span><span class="p">[:,</span><span class="n">select</span><span class="p">,:]</span>
+        
+        <span class="n">colors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interp_gray_level</span><span class="p">(</span><span class="n">p_real</span><span class="p">,</span> <span class="n">imag</span><span class="p">)</span>
+        
+        <span class="n">ndarray</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posterizeImage</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span>
+        
+        <span class="c1"># Prevent errors with iterative list, adding support for </span>
+        <span class="c1"># several distances in the computation of the GLCM</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">distances</span> <span class="o">=</span> <span class="p">[</span><span class="n">distances</span><span class="p">]</span>        
+        
+        <span class="n">glcm</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dis</span> <span class="ow">in</span> <span class="n">distances</span><span class="p">:</span>
+            <span class="n">glcm</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">texture</span><span class="o">.</span><span class="n">cooccurence</span><span class="p">(</span><span class="n">ndarray</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">dis</span><span class="p">,</span> <span class="n">symmetric</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">texture</span><span class="o">.</span><span class="n">haralick_features</span><span class="p">(</span><span class="n">glcm</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">texture</span><span class="o">.</span><span class="n">haralick_labels</span>
+        <span class="k">return</span> <span class="n">features</span><span class="p">,</span> <span class="n">labels</span></div>
+    
+    
+<div class="viewcode-block" id="SphericalBrainMapping.showMap"><a class="viewcode-back" href="../api.html#mapBrain.SphericalBrainMapping.showMap">[docs]</a>    <span class="k">def</span> <span class="nf">showMap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">map</span><span class="p">,</span> <span class="n">measure</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Shows the computed maps in a window using pyplot</span>
+<span class="sd">        </span>
+<span class="sd">        :param map: map or array of maps to be shown</span>
+<span class="sd">        :type map: numpy ndarray</span>
+<span class="sd">        :param measure: SBM measure to be computed</span>
+<span class="sd">        :type measure: string</span>
+<span class="sd">        :param cmap: Colormap to use in representation</span>
+<span class="sd">        :type cmap: string with valid matplotlib colormap</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+        <span class="c1"># Set the maximum and minimum value of the computed maps</span>
+        <span class="n">minimum</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span>
+        <span class="n">maximum</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">imgplot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+            <span class="c1"># Trick for plotting large numbers of layers in a kept proportion</span>
+            <span class="n">ncol</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="o">**</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="mi">3</span><span class="p">)))</span>
+            <span class="n">nrow</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="o">/</span><span class="n">ncol</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">nl</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="p">):</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">nrow</span><span class="p">,</span><span class="n">ncol</span><span class="p">,</span><span class="n">nl</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="nb">map</span><span class="p">[</span><span class="n">nl</span><span class="p">]),</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">minimum</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">maximum</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">measure</span><span class="o">+</span><span class="s1">&#39;-SBM (&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">nl</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;)&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">measure</span><span class="o">==</span><span class="s1">&#39;texture&#39;</span><span class="p">:</span>
+            <span class="c1"># If texture, it plots 13 as if they were layers.</span>
+            <span class="n">imgplot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+            <span class="n">ncol</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mi">13</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">13</span><span class="o">**</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="mi">3</span><span class="p">)))</span>
+            <span class="n">nrow</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">13</span><span class="o">/</span><span class="n">ncol</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">nl</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">13</span><span class="p">):</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">nrow</span><span class="p">,</span><span class="n">ncol</span><span class="p">,</span><span class="n">nl</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="nb">map</span><span class="p">[</span><span class="n">nl</span><span class="p">,:,:]),</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">minimum</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">maximum</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">measure</span><span class="o">+</span><span class="s1">&#39;-SBM (&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">nl</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;)&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+                
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">imgplot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="nb">map</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">minimum</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">maximum</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">measure</span><span class="o">+</span><span class="s1">&#39;-SBM&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">imgplot</span></div>
+                
+            
+            
+<div class="viewcode-block" id="SphericalBrainMapping.sph2cart"><a class="viewcode-back" href="../api.html#mapBrain.SphericalBrainMapping.sph2cart">[docs]</a>    <span class="k">def</span> <span class="nf">sph2cart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the corresponding spherical coordinates given the elevation,</span>
+<span class="sd">        azimuth and radius</span>
+<span class="sd">        </span>
+<span class="sd">        :param theta: Azimuth angle (radians)</span>
+<span class="sd">        :type theta: float</span>
+<span class="sd">        :param phi: Elevation angle (radians)</span>
+<span class="sd">        :type phi: float</span>
+<span class="sd">        :param rad: Radius </span>
+<span class="sd">        :type rad: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+        <span class="n">rcosphi</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">rcosphi</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">rcosphi</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span></div>
+
+            
+<div class="viewcode-block" id="SphericalBrainMapping.doSBM"><a class="viewcode-back" href="../api.html#mapBrain.SphericalBrainMapping.doSBM">[docs]</a>    <span class="k">def</span> <span class="nf">doSBM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">measure</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Performs the SBM on the selected image and using the specified measure</span>
+<span class="sd">        </span>
+<span class="sd">        :param image: Three-dimensional intensity array corresponding to a 3D registered brain image. </span>
+<span class="sd">        :type image: 3D numpy array</span>
+<span class="sd">        :param measure: SBM measure to be computed</span>
+<span class="sd">        :type measure: string</span>
+<span class="sd">        :param show: Specifies whether to show the computed map (True) or not (False)</span>
+<span class="sd">        :type show: bool</span>
+<span class="sd">        :param origin: Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image. </span>
+<span class="sd">        :type origin: 3D coordinates in numpy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">image</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">image</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">tam</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>                           <span class="c1"># Size of the image</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">origin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>    <span class="c1"># To compute the middle point</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span>                       <span class="c1"># Compute the maximum value of the mapping vector v</span>
+<span class="c1">#        tamArr=numpy.repeat([tam],lon,0) # Residual</span>
+
+        <span class="c1"># We create the mapping vectors and perform the conversion from spherical</span>
+        <span class="c1"># coordinates to cartesian coordiantes (the ones in our 3D array). </span>
+        <span class="n">azim</span><span class="p">,</span> <span class="n">elev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeMappingVectors</span><span class="p">()</span>
+        <span class="n">THETA</span><span class="p">,</span><span class="n">PHI</span><span class="p">,</span><span class="n">RAD</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">azim</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
+        <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sph2cart</span><span class="p">(</span><span class="n">THETA</span><span class="p">,</span><span class="n">PHI</span><span class="p">,</span><span class="n">RAD</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">measure</span><span class="o">==</span><span class="s1">&#39;texture&#39;</span><span class="p">:</span>
+            <span class="c1"># Define the blank map to be filled (nlayers, features, 361, 181)</span>
+            <span class="n">mapa</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">13</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">361</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">181</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)])</span>
+<span class="c1">#            for nl in range(self.nlayers):</span>
+<span class="c1">#                intvl=numpy.int32(numpy.floor(lon/self.nlayers)) # no sirve para nada todavía</span>
+            <span class="c1"># eliminamos el número de capas</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">azim</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">elev</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">,:]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span><span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">,:]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span><span class="n">z</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">,:]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()))</span><span class="o">.</span><span class="n">T</span>
+                    <span class="n">mapa</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeTexture</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">y</span><span class="o">+</span><span class="n">origin</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">Z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">z</span><span class="o">+</span><span class="n">origin</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+            <span class="n">coord</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ravel_multi_index</span><span class="p">((</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">Z</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;clip&#39;</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">tam</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    
+            <span class="c1"># This is the blank map to be filled. </span>
+            <span class="n">mapa</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">361</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">181</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)])</span>
+            
+            <span class="c1"># Begin of the loop</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">nl</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="p">):</span>
+                <span class="n">intvl</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">lon</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nlayers</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">coord</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                        <span class="n">vset</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="n">coord</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">nl</span><span class="o">*</span><span class="n">intvl</span><span class="p">:(</span><span class="n">nl</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">intvl</span><span class="p">]])</span>
+                        <span class="k">if</span> <span class="n">measure</span><span class="o">.</span><span class="vm">__class__</span><span class="o">==</span><span class="nb">type</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">):</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">mapa</span><span class="p">[</span><span class="n">nl</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">measure</span><span class="p">)(</span><span class="n">vset</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The measure </span><span class="si">%s</span><span class="s2"> is not supported&quot;</span><span class="o">%</span><span class="n">measure</span><span class="p">)</span>
+                                <span class="k">return</span>
+                            
+        <span class="c1"># If it has been vset, we display the map</span>
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">showMap</span><span class="p">(</span><span class="n">mapa</span><span class="p">,</span><span class="n">measure</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">mapa</span></div></div>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">mapBrain 0.9.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Francisco J. Martinez-Murcia and SiPBA.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+    </div>
+  </body>
+</html>

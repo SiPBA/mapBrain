@@ -1,0 +1,222 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>brainSimulator’s API &#8212; mapBrain 0.9.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to mapBrain’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to mapBrain’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">mapBrain 0.9.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-mapBrain">
+<span id="brainsimulator-s-api"></span><h1>brainSimulator’s API<a class="headerlink" href="#module-mapBrain" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="class-brainsimulator">
+<h2>class brainSimulator<a class="headerlink" href="#class-brainsimulator" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mapBrain.SphericalBrainMapping">
+<em class="property">class </em><code class="descclassname">mapBrain.</code><code class="descname">SphericalBrainMapping</code><span class="sig-paren">(</span><em>resolution=1</em>, <em>deformation=0.0</em>, <em>ithreshold=0</em>, <em>nlayers=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mapBrain.html#SphericalBrainMapping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mapBrain.SphericalBrainMapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a Spherical Brain Mapping of a 3D Brain Image</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>resolution</strong> (<em>int</em><em>, </em><em>float</em>) – Angle resolution at which each mapping vector is computed (default 1 degree)</li>
+<li><strong>deformation</strong> (<em>float</em>) – Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)</li>
+<li><strong>ithreshold</strong> (<em>float</em>) – Intensity threshold ($I_{th}$) for the projections needing it (default 0)</li>
+<li><strong>nlayers</strong> (<em>int</em>) – Nummber of equally distributed layers (default 1)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mapBrain.SphericalBrainMapping.computeTexture">
+<code class="descname">computeTexture</code><span class="sig-paren">(</span><em>p</em>, <em>imag</em>, <em>origin</em>, <em>distances=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mapBrain.html#SphericalBrainMapping.computeTexture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mapBrain.SphericalBrainMapping.computeTexture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the texture around vector p</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>p</strong> – </li>
+<li><strong>imag</strong> (<em>3D numpy array</em>) – Three-dimensional intensity array corresponding to a 3D registered brain image.</li>
+<li><strong>origin</strong> (<em>3D coordinates in numpy array</em>) – Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image.</li>
+<li><strong>distances</strong> (<em>integer</em><em> or </em><em>list of integers</em>) – It helds the distances at which the GLCM is going to be computed.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mapBrain.SphericalBrainMapping.doSBM">
+<code class="descname">doSBM</code><span class="sig-paren">(</span><em>image</em>, <em>measure='average'</em>, <em>show=True</em>, <em>origin=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mapBrain.html#SphericalBrainMapping.doSBM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mapBrain.SphericalBrainMapping.doSBM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs the SBM on the selected image and using the specified measure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>3D numpy array</em>) – Three-dimensional intensity array corresponding to a 3D registered brain image.</li>
+<li><strong>measure</strong> (<em>string</em>) – SBM measure to be computed</li>
+<li><strong>show</strong> (<em>bool</em>) – Specifies whether to show the computed map (True) or not (False)</li>
+<li><strong>origin</strong> (<em>3D coordinates in numpy array</em>) – Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mapBrain.SphericalBrainMapping.showMap">
+<code class="descname">showMap</code><span class="sig-paren">(</span><em>map</em>, <em>measure</em>, <em>cmap='gray'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mapBrain.html#SphericalBrainMapping.showMap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mapBrain.SphericalBrainMapping.showMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows the computed maps in a window using pyplot</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>map</strong> (<em>numpy ndarray</em>) – map or array of maps to be shown</li>
+<li><strong>measure</strong> (<em>string</em>) – SBM measure to be computed</li>
+<li><strong>cmap</strong> (<em>string with valid matplotlib colormap</em>) – Colormap to use in representation</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mapBrain.SphericalBrainMapping.sph2cart">
+<code class="descname">sph2cart</code><span class="sig-paren">(</span><em>theta</em>, <em>phi</em>, <em>r</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mapBrain.html#SphericalBrainMapping.sph2cart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mapBrain.SphericalBrainMapping.sph2cart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the corresponding spherical coordinates given the elevation,
+azimuth and radius</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>theta</strong> (<em>float</em>) – Azimuth angle (radians)</li>
+<li><strong>phi</strong> (<em>float</em>) – Elevation angle (radians)</li>
+<li><strong>rad</strong> (<em>float</em>) – Radius</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mapBrain.SphericalBrainMapping.vsetIThreshold">
+<code class="descname">vsetIThreshold</code><span class="sig-paren">(</span><em>ithreshold=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mapBrain.html#SphericalBrainMapping.vsetIThreshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mapBrain.SphericalBrainMapping.vsetIThreshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the intensity threshold to be used in SBM.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ithreshold</strong> (<em>float</em>) – Intensity threshold ($I_{th}$) for the projections needing it (default 0)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">brainSimulator’s API</a><ul>
+<li><a class="reference internal" href="#class-brainsimulator">class brainSimulator</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to mapBrain’s documentation!</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to mapBrain’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">mapBrain 0.9.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Francisco J. Martinez-Murcia and SiPBA.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+    </div>
+  </body>
+</html>
