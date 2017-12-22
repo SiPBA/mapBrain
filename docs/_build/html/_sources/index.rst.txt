@@ -14,7 +14,7 @@ Welcome to mapBrain's documentation!
    :alt: Promo banner of SBM.
 
 
-The documentation is still under development, but you can check a quickstart guide and the api in the following links:
+The documentation is still under development, but you can check a **quickstart guide** and the **api** in the following links:
 
 .. toctree::
    quickstart
