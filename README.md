@@ -13,7 +13,13 @@ A new structural parametrization of MRI images has been added, using a modified 
 
 Installation
 ----------------
-Copy the *.py files directly to the working directory, and import the library with `import mapBrain`. 
+`mapBrain` is now available via `pypi` and can be installed directly from:
+
+```python
+pip install mapBrain
+```
+
+Otherwise, copy the *.py files directly to the working directory, and import the library with `import mapBrain`. 
 
 Usage
 -----------------
