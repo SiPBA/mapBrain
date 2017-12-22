@@ -1,4 +1,4 @@
-brainSimulator's API
+mapBrain's API
 ===================================
 .. automodule:: mapBrain
 

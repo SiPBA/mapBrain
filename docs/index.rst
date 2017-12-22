@@ -6,7 +6,10 @@
 Welcome to mapBrain's documentation!
 ====================================
 
+`mapBrain` is a library used to perform the **Spherical Brain Mapping** on neuroimaging. The documentation is still under development, but you can check a quickstart guide and the api in the following links:
+
 .. toctree::
+   quickstart
    api
    :maxdepth: 2
    :caption: Contents:
