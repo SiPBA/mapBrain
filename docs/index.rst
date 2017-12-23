@@ -8,7 +8,7 @@ Welcome to mapBrain's documentation!
 
 `mapBrain` is a library used to perform the **Spherical Brain Mapping** on neuroimaging. 
 
-.. figure:: images/promoSBM.jpg
+.. figure:: images/promoSBM.*
    :figwidth: 80 %
    :align: center
    :alt: Promo banner of SBM.

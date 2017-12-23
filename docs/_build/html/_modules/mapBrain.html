@@ -59,7 +59,7 @@
 <span class="sd">    :type resolution: int, float</span>
 <span class="sd">    :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)</span>
 <span class="sd">    :type deformation: float </span>
-<span class="sd">    :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)</span>
+<span class="sd">    :param ithreshold: Intensity threshold (:math:`I_{th}`) for the projections needing it (default 0)</span>
 <span class="sd">    :type ithreshold: float</span>
 <span class="sd">    :param nlayers: Nummber of equally distributed layers (default 1)</span>
 <span class="sd">    :type nlayers: int</span>
@@ -74,7 +74,7 @@
 <span class="sd">        :type resolution: int, float</span>
 <span class="sd">        :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)</span>
 <span class="sd">        :type deformation: float </span>
-<span class="sd">        :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)</span>
+<span class="sd">        :param ithreshold: Intensity threshold (:math:`I_{th}`) for the projections needing it (default 0)</span>
 <span class="sd">        :type ithreshold: float</span>
 <span class="sd">        :param nlayers: Nummber of equally distributed layers (default 1)</span>
 <span class="sd">        :type nlayers: int</span>
@@ -324,7 +324,7 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Computes the texture around vector p</span>
 <span class="sd">        </span>
-<span class="sd">        :param p: </span>
+<span class="sd">        :param p: The mapping or rojecting vector :math:`\mathbf{v}_{{\\theta},{\\varphi}}`</span>
 <span class="sd">        :param imag: Three-dimensional intensity array corresponding to a 3D registered brain image. </span>
 <span class="sd">        :type imag: 3D numpy array</span>
 <span class="sd">        :param origin: Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image. </span>
@@ -547,7 +547,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Francisco J. Martinez-Murcia and SiPBA.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

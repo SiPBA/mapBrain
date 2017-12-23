@@ -63,7 +63,7 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>resolution</strong> (<em>int</em><em>, </em><em>float</em>) – Angle resolution at which each mapping vector is computed (default 1 degree)</li>
 <li><strong>deformation</strong> (<em>float</em>) – Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)</li>
-<li><strong>ithreshold</strong> (<em>float</em>) – Intensity threshold ($I_{th}$) for the projections needing it (default 0)</li>
+<li><strong>ithreshold</strong> (<em>float</em>) – Intensity threshold (<span class="math">\(I_{th}\)</span>) for the projections needing it (default 0)</li>
 <li><strong>nlayers</strong> (<em>int</em>) – Nummber of equally distributed layers (default 1)</li>
 </ul>
 </td>
@@ -79,7 +79,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>p</strong> – </li>
+<li><strong>p</strong> – The mapping or rojecting vector <span class="math">\(\mathbf{v}_{{\theta},{\varphi}}\)</span></li>
 <li><strong>imag</strong> (<em>3D numpy array</em>) – Three-dimensional intensity array corresponding to a 3D registered brain image.</li>
 <li><strong>origin</strong> (<em>3D coordinates in numpy array</em>) – Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image.</li>
 <li><strong>distances</strong> (<em>integer</em><em> or </em><em>list of integers</em>) – It helds the distances at which the GLCM is going to be computed.</li>
@@ -216,7 +216,7 @@ azimuth and radius</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Francisco J. Martinez-Murcia and SiPBA.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

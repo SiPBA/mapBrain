@@ -6,7 +6,7 @@ Spherical Brain Mapping
 --------------------------------
 The **Spherical Brain Mapping** (SBM) is a feature extraction and visualization framework intended to map the internal structures and features of the brain onto a 2D image that summarizes all this information.  
 
-.. figure:: images/sbm_coordinates.jpg
+.. figure:: images/sbm_coordinates.*
    :figwidth: 80 %
    :align: center
    :alt: Schema of the computation of :math:`\mathbf{v}_{(\theta,\varphi)}`.
@@ -29,9 +29,10 @@ Alternatively, download the package, uncompress and execute::
 
 Quick usage
 ------------------------
-`mapBrain` transforms 3D brain images in 2D maps showing texture and statistical information. To use it, import the `SphericalBrainMapping` class as:: 
+`mapBrain` transforms 3D brain images in 2D maps showing texture and statistical information. To use it, import the `mapBrain` library and create an object of `SphericalBrainMapping` class:: 
 
-	import mapBrain.SphericalBrainMapping as sbm
+	import mapBrain 
+        sbm = mapBrain.SphericalBrainMapping()
 
 Imaging information must be in `numpy.ndarray` format, so you can load the images using, e.g., nibabel as::
 
@@ -53,7 +54,7 @@ The position may vary depending on the registration procedure used. To quickly g
 
 That should output a window (if not, use plt.show() of matplotlib.pyplot) with an average map just like this: 
 
-.. figure:: images/average_example.jpg
+.. figure:: images/average_example.*
    :figwidth: 80 %
    :align: center
    :alt: *Average* mapping of a MRI brain.

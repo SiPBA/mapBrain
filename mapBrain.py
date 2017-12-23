@@ -11,7 +11,7 @@ class SphericalBrainMapping(object):
     :type resolution: int, float
     :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)
     :type deformation: float 
-    :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)
+    :param ithreshold: Intensity threshold (:math:`I_{th}`) for the projections needing it (default 0)
     :type ithreshold: float
     :param nlayers: Nummber of equally distributed layers (default 1)
     :type nlayers: int
@@ -26,7 +26,7 @@ class SphericalBrainMapping(object):
         :type resolution: int, float
         :param deformation: Rate of unequally distributed mapping vectors, to be used when the surface to be mapped is not spherical but ellipsoid (in the range 0-1, with 0 meaning a perfect sphere)
         :type deformation: float 
-        :param ithreshold: Intensity threshold ($I_{th}$) for the projections needing it (default 0)
+        :param ithreshold: Intensity threshold (:math:`I_{th}`) for the projections needing it (default 0)
         :type ithreshold: float
         :param nlayers: Nummber of equally distributed layers (default 1)
         :type nlayers: int
@@ -276,7 +276,7 @@ class SphericalBrainMapping(object):
         '''
         Computes the texture around vector p
         
-        :param p: 
+        :param p: The mapping or rojecting vector :math:`\mathbf{v}_{{\\theta},{\\varphi}}`
         :param imag: Three-dimensional intensity array corresponding to a 3D registered brain image. 
         :type imag: 3D numpy array
         :param origin: Specifies the position of the origin of mapping vectors. If not specified, defaults to the geometrical center of the image. 
