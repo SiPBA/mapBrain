@@ -26,9 +26,10 @@ The documentation is still under development, but you can check a **quickstart g
 Cite
 ----------------
 
-1. F.J. Martinez-Murcia et al. "A Spherical Brain Mapping of MR images for the detection of Alzheimer's Disease". Current Alzheimer Research 13(5):575-88. 2016. DOI: `10.2174/1567205013666160314145158 <https://www.researchgate.net/publication/284022331_A_Spherical_Brain_Mapping_of_MR_Images_for_the_Detection_of_Alzheimer%27s_Disease>`_
-2. F.J. Martinez-Murcia et al. "Projecting MRI Brain images for the detection of Alzheimer's Disease". Stud Health Technol Inform 207, 225-33. 2014. 
-3. F.J. Martínez-Murcia et al. "A Volumetric Radial LBP Projection of MRI Brain Images for the Diagnosis of Alzheimer’s Disease". Lecture Notes in Computer Science 9107, 19-28. 2015.
+1. F.J. Martinez-Murcia et al. "Assessing Mild Cognitive Impairment Progression using a Spherical Brain Mapping of Magnetic Resonance Imaging". Journal of Alzheimer's Disease (Pre-print). 2018. DOI: `10.3233/JAD-170403 <https://zenodo.org/record/1162669>`_
+2. F.J. Martinez-Murcia et al. "A Spherical Brain Mapping of MR images for the detection of Alzheimer's Disease". Current Alzheimer Research 13(5):575-88. 2016. DOI: `10.2174/1567205013666160314145158 <https://www.researchgate.net/publication/284022331_A_Spherical_Brain_Mapping_of_MR_Images_for_the_Detection_of_Alzheimer%27s_Disease>`_
+3. F.J. Martinez-Murcia et al. "Projecting MRI Brain images for the detection of Alzheimer's Disease". Stud Health Technol Inform 207, 225-33. 2014. 
+4. F.J. Martínez-Murcia et al. "A Volumetric Radial LBP Projection of MRI Brain Images for the Diagnosis of Alzheimer’s Disease". Lecture Notes in Computer Science 9107, 19-28. 2015.
 
 
 Indices and tables
