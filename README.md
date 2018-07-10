@@ -1,6 +1,8 @@
 mapBrain (Spherical Brain Mapping)
 ===================
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1042388.svg)](https://doi.org/10.5281/zenodo.1042388)
+[![Documentation Status](//readthedocs.org/projects/mapbrain/badge/?version=latest)](https://mapbrain.readthedocs.io/en/latest/?badge=latest)
+
 
 A library to perform **Spherical Brain Mapping** on a 3D Brain Image. 
 
