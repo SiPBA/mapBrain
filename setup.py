@@ -5,7 +5,7 @@ with open('README.md') as file:
 
 setup(
     name="mapBrain",
-    version="0.9.1",
+    version="0.9.3",
     description="Brain image feature extraction and visualization",
     long_description=long_description,
     author="SIPBA@UGR",
